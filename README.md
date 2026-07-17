@@ -1,6 +1,6 @@
 # x3d-soplos — AMD X3D VCache Scheduler Patch for Soplos Linux
 
-Scheduler patch for Linux 7.x that biases task wake-up towards the VCache CCD
+Scheduler patch for Linux 6.12–7.2 that biases task wake-up towards the VCache CCD
 on dual-CCD AMD Ryzen X3D processors, improving gaming and latency-sensitive
 workload performance.
 
@@ -23,6 +23,23 @@ workload performance.
 Single-CCD X3D processors are automatically excluded at runtime: all cores
 report the same L3 size, so the asymmetry check fails and the feature stays
 disabled with zero overhead.
+
+---
+
+## Patch files
+
+Three patch files are provided, one per kernel family:
+
+| File | Kernel versions |
+|------|----------------|
+| `patches/0001-sched-amd-x3d-vcache-6.x.patch` | Linux 6.12.x, 6.18.x |
+| `patches/0001-sched-amd-x3d-vcache-7.0.patch` | Linux 7.0.x |
+| `patches/0001-sched-amd-x3d-vcache-7.1.patch` | Linux 7.1.x, 7.2-rc |
+
+The split is necessary because `kernel/sched/fair.c` restructured the
+`select_task_rq_fair()` fast path between 7.0 and 7.1, and
+`arch/x86/include/asm/topology.h` gained `arch_sched_node_distance()` in 7.0,
+changing the correct insertion point.
 
 ---
 
@@ -54,30 +71,40 @@ the VCache CCD, the patch checks two conditions before redirecting:
 
 If both conditions hold, the task is steered to an idle VCache CPU.
 
+Load is tracked via two atomic counters (`amd_x3d_vcache_running`,
+`amd_x3d_other_running`) updated in `enqueue_task_fair` and
+`dequeue_task_fair`. The hot path in `select_task_rq_fair` does two
+`atomic_read()` calls — O(1) regardless of CPU count.
+
 The `static_branch_unlikely` used to guard the entire block compiles to a
-single no-op NOP on systems where the feature is inactive (non-AMD, non-Zen3+,
+single NOP on systems where the feature is inactive (non-AMD, non-Zen3+,
 or single-CCD X3D). Zero overhead.
 
 ### Modified files
 
 | File | Change |
 |------|--------|
-| `arch/x86/include/asm/topology.h` | Export `amd_x3d_vcache_active`, `amd_x3d_vcache_mask`, `amd_x3d_vcache_nr`, `amd_x3d_other_nr` |
+| `arch/x86/include/asm/topology.h` | Export symbols: `amd_x3d_vcache_active`, masks, counts, atomic counters |
 | `arch/x86/kernel/cpu/Makefile` | Compile `amd_x3d_sched.o` when `CONFIG_CPU_SUP_AMD=y` |
 | `arch/x86/kernel/cpu/amd_x3d_sched.c` | New file — detection logic and exported symbols |
-| `kernel/sched/fair.c` | Hook in `select_task_rq_fair()` |
+| `kernel/sched/fair.c` | Hooks in `enqueue_task_fair`, `dequeue_task_fair`, `select_task_rq_fair` |
 
 ---
 
 ## Applying the patch manually
 
 ```bash
-cd /path/to/linux-7.x.y
-patch -p1 < /path/to/0001-sched-amd-x3d-vcache.patch
-```
+cd /path/to/linux-x.y.z
 
-The patch applies cleanly to Linux 7.1.x. Minor context adjustments may be
-needed for other 7.x minor versions.
+# 6.12.x or 6.18.x
+patch -p1 < /path/to/patches/0001-sched-amd-x3d-vcache-6.x.patch
+
+# 7.0.x
+patch -p1 < /path/to/patches/0001-sched-amd-x3d-vcache-7.0.patch
+
+# 7.1.x or 7.2-rc
+patch -p1 < /path/to/patches/0001-sched-amd-x3d-vcache-7.1.patch
+```
 
 ---
 

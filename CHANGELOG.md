@@ -1,5 +1,28 @@
 # Changelog — x3d-soplos
 
+## 1.1.0 — 2026-07-17
+
+### Changed
+
+- Replaced single `0001-sched-amd-x3d-vcache.patch` with three version-specific patch files:
+  - `0001-sched-amd-x3d-vcache-6.x.patch` — Linux 6.12.x, 6.18.x
+  - `0001-sched-amd-x3d-vcache-7.0.patch` — Linux 7.0.x
+  - `0001-sched-amd-x3d-vcache-7.1.patch` — Linux 7.1.x, 7.2-rc
+  - Necessary because `select_task_rq_fair()` fast path structure and the
+    `topology.h` insertion point differ between kernel families.
+
+### Improved
+
+- Hot path performance: replaced `for_each_cpu()` load loops in
+  `select_task_rq_fair()` with two `atomic_read()` calls — O(1) regardless of
+  CPU count. Atomic counters (`amd_x3d_vcache_running`, `amd_x3d_other_running`)
+  are maintained by new hooks at the end of `enqueue_task_fair` and before
+  `return true` in `dequeue_task_fair`.
+- Added `#include <linux/atomic.h>` and extern declarations for both atomic
+  counters to `arch/x86/include/asm/topology.h`.
+
+---
+
 ## 1.0.0 — 2026-07-16
 
 Initial release.
