@@ -77,7 +77,7 @@ Signed-off-by: Sergi Perich <info@soploslinux.com>
  endif
 --- /dev/null
 +++ b/arch/x86/kernel/cpu/amd_x3d_sched.c
-@@ -0,0 +1,91 @@
+@@ -0,0 +1,117 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * AMD X3D VCache scheduler preference
