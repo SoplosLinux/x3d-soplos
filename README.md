@@ -41,6 +41,12 @@ The split is necessary because `kernel/sched/fair.c` restructured the
 `arch/x86/include/asm/topology.h` gained `arch_sched_node_distance()` in 7.0,
 changing the correct insertion point.
 
+> `patches/0001-sched-amd-x3d-vcache-7.1.patch` was re-anchored on
+> 2026-07-25 to keep applying cleanly against the 7.1.5 stable point
+> release, after a util_est refactor removed the line it was anchored on in
+> `dequeue_task_fair()`. See `CHANGELOG.md` (1.1.1) for details. Verified
+> against 7.1.0–7.1.5, offset-only on all of them.
+
 ---
 
 ## How it works

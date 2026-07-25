@@ -197,7 +197,8 @@ Signed-off-by: Sergi Perich <info@soploslinux.com>
 +late_initcall(amd_x3d_vcache_init);
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -7308,4 +7308,12 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+@@ -7304,6 +7304,14 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+
  	assert_list_leaf_cfs_rq(rq);
 
 +#ifdef CONFIG_CPU_SUP_AMD
@@ -210,8 +211,8 @@ Signed-off-by: Sergi Perich <info@soploslinux.com>
 +#endif /* CONFIG_CPU_SUP_AMD */
  	hrtick_update(rq);
  }
-@@ -7444,6 +7452,14 @@ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
+@@ -7441,6 +7449,14 @@ static bool dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
  	/*
  	 * Must not reference @p after dequeue_entities(DEQUEUE_DELAYED).
  	 */
@@ -225,7 +226,8 @@ Signed-off-by: Sergi Perich <info@soploslinux.com>
 +#endif /* CONFIG_CPU_SUP_AMD */
  	return true;
  }
-@@ -8956,8 +8972,29 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int wake_flags)
+
+@@ -8890,8 +8906,29 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int wake_flags)
  		return sched_balance_find_dst_cpu(sd, p, cpu, prev_cpu, sd_flag);
 
  	/* Fast path */
