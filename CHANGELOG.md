@@ -1,5 +1,23 @@
 # Changelog — x3d-soplos
 
+## 1.2.0 — 2026-08-17
+
+### Added
+
+- `patches/0001-sched-amd-x3d-vcache-7.x.patch` — generic fallback for kernel
+  7.2 and any other 7.x line without a dedicated file. Same content as
+  `0001-sched-amd-x3d-vcache-7.1.patch`, verified to apply cleanly against
+  real Linux 7.2 sources (offset only — up to 714 lines, since `fair.c` grew
+  by ~1150 lines — no fuzz, no failed hunks).
+
+### Fixed
+
+- This file never existed before, even though `soplos-kernel-installer`'s
+  downloader has requested a `7.x`-tagged fallback since it was written —
+  every kernel line other than an exact 7.0/7.1 match 404'd silently and the
+  X3D patch was skipped without a visible error. First surfaced when kernel
+  7.2 was released (2026-08-16).
+
 ## 1.1.1 — 2026-07-25
 
 ### Fixed

@@ -28,18 +28,22 @@ disabled with zero overhead.
 
 ## Patch files
 
-Three patch files are provided, one per kernel family:
+Four patch files are provided:
 
 | File | Kernel versions |
 |------|----------------|
 | `patches/0001-sched-amd-x3d-vcache-6.x.patch` | Linux 6.12.x, 6.18.x |
 | `patches/0001-sched-amd-x3d-vcache-7.0.patch` | Linux 7.0.x |
-| `patches/0001-sched-amd-x3d-vcache-7.1.patch` | Linux 7.1.x, 7.2-rc |
+| `patches/0001-sched-amd-x3d-vcache-7.1.patch` | Linux 7.1.x |
+| `patches/0001-sched-amd-x3d-vcache-7.x.patch` | Linux 7.2 and any other 7.x line without its own file — identical content to the 7.1 file, verified to still apply cleanly |
 
-The split is necessary because `kernel/sched/fair.c` restructured the
-`select_task_rq_fair()` fast path between 7.0 and 7.1, and
+The split between 6.x/7.0/7.1 is necessary because `kernel/sched/fair.c`
+restructured the `select_task_rq_fair()` fast path between 7.0 and 7.1, and
 `arch/x86/include/asm/topology.h` gained `arch_sched_node_distance()` in 7.0,
-changing the correct insertion point.
+changing the correct insertion point. `soplos-kernel-installer` requests the
+`7.x` file for any kernel line other than an exact 7.0/7.1 match — that file
+didn't exist before 2026-08-17, which made the ISA-level and X3D patches
+silently 404 and skip on kernel 7.2's release.
 
 > `patches/0001-sched-amd-x3d-vcache-7.1.patch` was re-anchored on
 > 2026-07-25 to keep applying cleanly against the 7.1.5 stable point
